@@ -155,6 +155,8 @@
             border-radius: 5px;
             font-size: 13px;
             margin-top: 8px;
+            max-height: 200px;
+            overflow-y: auto;
         }
         
         .companion-item {
@@ -203,13 +205,24 @@
             font-weight: 600;
         }
         
-        .success-message {
-            background: #d4edda;
-            border: 1px solid #c3e6cb;
-            color: #155724;
-            padding: 15px;
-            border-radius: 8px;
+        .students-container {
+            max-height: 500px;
+            overflow-y: auto;
             margin-bottom: 20px;
+            padding-right: 10px;
+        }
+        
+        .estudiante-item {
+            margin: 15px 0;
+            padding: 10px;
+            border-left: 3px solid #667eea;
+            background: #f9f9f9;
+            border-radius: 5px;
+        }
+        
+        .acompañantes {
+            margin-top: 10px;
+            font-size: 12px;
         }
     </style>
 </head>
@@ -309,7 +322,7 @@
                 <div class="step-counter">Paso 4 de 4</div>
                 <h2 style="font-size: 18px; margin-bottom: 20px;">Registrar Estudiantes</h2>
                 
-                <div id="estudiantesForm"></div>
+                <div class="students-container" id="estudiantesForm"></div>
                 
                 <div class="button-group">
                     <button class="btn-secondary" onclick="irPaso3()">← Atrás</button>
@@ -326,7 +339,10 @@
                     
                     <div id="resumenFinal" class="summary"></div>
                     
-                    <button class="btn-secondary" style="width: 100%; margin-top: 10px;" onclick="resetFormulario()">Nuevo Registro</button>
+                    <div class="button-group" style="flex-direction: column;">
+                        <button class="btn-primary" onclick="imprimirResumen()" style="margin-bottom: 10px;">🖨️ Imprimir Resumen</button>
+                        <button class="btn-secondary" onclick="resetFormulario()">Nuevo Registro</button>
+                    </div>
                 </div>
             </div>
         </div>
@@ -593,6 +609,131 @@
             document.getElementById('step5').classList.add('active');
         }
         
+        function generarPDF() {
+            const contenido = `
+GRADUACION 2025
+════════════════════════════════════════════════════════════════
+
+INSTITUCIÓN: ${datosGlobales.institucion}
+GRADO: ${datosGlobales.grado}
+SECCIÓN: ${datosGlobales.seccion}
+CANTIDAD DE ESTUDIANTES: ${datosGlobales.cantEstudiantes}
+
+════════════════════════════════════════════════════════════════
+
+REGISTRO DE ESTUDIANTES Y ACOMPAÑANTES
+
+${Array.from({length: datosGlobales.cantEstudiantes}, (_, i) => `
+ESTUDIANTE ${i + 1}
+─────────────────────────────────────────────────────────────
+Apellidos: _______________________________________
+Nombres: _________________________________________
+Número de Mesa: ___________
+
+ACOMPAÑANTES (Máximo 15):
+1. Apellido: ________________________  Nombre: ___________________
+2. Apellido: ________________________  Nombre: ___________________
+3. Apellido: ________________________  Nombre: ___________________
+4. Apellido: ________________________  Nombre: ___________________
+5. Apellido: ________________________  Nombre: ___________________
+6. Apellido: ________________________  Nombre: ___________________
+7. Apellido: ________________________  Nombre: ___________________
+8. Apellido: ________________________  Nombre: ___________________
+9. Apellido: ________________________  Nombre: ___________________
+10. Apellido: ________________________  Nombre: ___________________
+11. Apellido: ________________________  Nombre: ___________________
+12. Apellido: ________________________  Nombre: ___________________
+13. Apellido: ________________________  Nombre: ___________________
+14. Apellido: ________________________  Nombre: ___________________
+15. Apellido: ________________________  Nombre: ___________________
+
+`).join('\n════════════════════════════════════════════════════════════════\n')}
+`;
+            
+            const blob = new Blob([contenido], {type: 'text/plain;charset=utf-8'});
+            const link = document.createElement('a');
+            link.href = URL.createObjectURL(blob);
+            link.download = `Plantilla_${datosGlobales.institucion}_${datosGlobales.grado}${datosGlobales.seccion}.txt`;
+            link.click();
+        }
+        
+        function imprimirResumen() {
+            const ventana = window.open('', '', 'width=800,height=600');
+            ventana.document.write(`
+                <html>
+                <head>
+                    <title>Resumen Registro - Graduación 2025</title>
+                    <style>
+                        body { font-family: Arial, sans-serif; padding: 20px; }
+                        .header { text-align: center; margin-bottom: 30px; }
+                        .header h1 { margin: 0; color: #333; }
+                        .header p { margin: 5px 0; color: #666; }
+                        .data { margin: 20px 0; padding: 15px; background: #f5f5f5; border-radius: 5px; }
+                        .data-row { display: flex; justify-content: space-between; margin: 8px 0; }
+                        .data-label { font-weight: bold; }
+                        .data-value { color: #667eea; }
+                        .estudiantes { margin-top: 20px; }
+                        .estudiante-item { margin: 15px 0; padding: 10px; border-left: 3px solid #667eea; background: #f9f9f9; }
+                        .acompañantes { margin-top: 10px; font-size: 12px; }
+                        @media print {
+                            body { margin: 0; padding: 0; }
+                        }
+                    </style>
+                </head>
+                <body>
+                    <div class="header">
+                        <h1>🎓 Graduación 2025</h1>
+                        <p>Resumen de Registro</p>
+                    </div>
+                    
+                    <div class="data">
+                        <div class="data-row">
+                            <span class="data-label">Institución:</span>
+                            <span class="data-value">${datosGlobales.institucion}</span>
+                        </div>
+                        <div class="data-row">
+                            <span class="data-label">Grado:</span>
+                            <span class="data-value">${datosGlobales.grado}</span>
+                        </div>
+                        <div class="data-row">
+                            <span class="data-label">Sección:</span>
+                            <span class="data-value">${datosGlobales.seccion}</span>
+                        </div>
+                        <div class="data-row">
+                            <span class="data-label">Fecha:</span>
+                            <span class="data-value">${datosGlobales.fecha}</span>
+                        </div>
+                        <div class="data-row">
+                            <span class="data-label">Local:</span>
+                            <span class="data-value">${datosGlobales.local}</span>
+                        </div>
+                    </div>
+                    
+                    <div class="estudiantes">
+                        <h3>Estudiantes Registrados (${datosGlobales.estudiantes.length})</h3>
+                        ${datosGlobales.estudiantes.map((est, idx) => `
+                            <div class="estudiante-item">
+                                <strong>${idx + 1}. ${est.apellido}, ${est.nombre}</strong>
+                                <div>Mesa: ${est.mesa || 'No asignada'}</div>
+                                ${est.acompañantes.length > 0 ? `
+                                    <div class="acompañantes">
+                                        <strong>Acompañantes (${est.acompañantes.length}):</strong>
+                                        ${est.acompañantes.map(a => `<div>• ${a.apellido}, ${a.nombre}</div>`).join('')}
+                                    </div>
+                                ` : ''}
+                            </div>
+                        `).join('')}
+                    </div>
+                    
+                    <script>
+                        window.print();
+                    </script>
+                </body>
+                </html>
+            `);
+            ventana.document.close();
+        }
+        
         function resetFormulario() {
             datosGlobales = {
                 institucion: '',
@@ -612,10 +753,6 @@
             document.getElementById('local').value = '';
             
             irPaso1();
-        }
-        
-        function generarPDF() {
-            alert('Plantilla de impresión en desarrollo. Por favor, usa la opción online.');
         }
         
         window.addEventListener('load', cargarConfiguracion);

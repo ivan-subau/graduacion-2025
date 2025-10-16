@@ -1,0 +1,585 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Panel de Reportes - Graduación 2025</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #f5f5f5;
+            padding: 20px;
+        }
+        
+        .login-screen {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+        }
+        
+        .login-screen.hidden {
+            display: none;
+        }
+        
+        .login-box {
+            background: white;
+            padding: 40px;
+            border-radius: 15px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.3);
+            max-width: 350px;
+            text-align: center;
+        }
+        
+        .login-box h1 {
+            margin-bottom: 10px;
+            color: #333;
+            font-size: 24px;
+        }
+        
+        .login-box p {
+            color: #999;
+            margin-bottom: 30px;
+            font-size: 14px;
+        }
+        
+        .login-box input {
+            width: 100%;
+            padding: 12px;
+            margin-bottom: 15px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 14px;
+        }
+        
+        .login-box button {
+            width: 100%;
+            padding: 12px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform 0.3s;
+        }
+        
+        .login-box button:hover {
+            transform: translateY(-2px);
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        
+        .header {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 20px;
+        }
+        
+        .header h1 {
+            font-size: 28px;
+            color: #333;
+        }
+        
+        .header-actions {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+        
+        button {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s;
+        }
+        
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+        
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 20px rgba(102, 126, 234, 0.4);
+        }
+        
+        .btn-secondary {
+            background: #f0f0f0;
+            color: #333;
+        }
+        
+        .btn-secondary:hover {
+            background: #e0e0e0;
+        }
+        
+        .filters {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            display: flex;
+            gap: 15px;
+            flex-wrap: wrap;
+            align-items: flex-end;
+        }
+        
+        .filter-group {
+            flex: 1;
+            min-width: 200px;
+        }
+        
+        .filter-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #333;
+            font-size: 14px;
+        }
+        
+        .filter-group select {
+            width: 100%;
+            padding: 10px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 14px;
+        }
+        
+        .reports {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+        
+        .report-card {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            border-left: 4px solid #667eea;
+        }
+        
+        .report-card h3 {
+            color: #667eea;
+            font-size: 14px;
+            margin-bottom: 10px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        
+        .report-card .value {
+            font-size: 32px;
+            font-weight: 700;
+            color: #333;
+        }
+        
+        .report-card .subtitle {
+            font-size: 12px;
+            color: #999;
+            margin-top: 10px;
+        }
+        
+        .reporte-detallado {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+        }
+        
+        .reporte-detallado h2 {
+            font-size: 18px;
+            color: #333;
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 2px solid #667eea;
+        }
+        
+        .grupo-institucion {
+            margin-bottom: 30px;
+            padding: 15px;
+            background: #f9f9f9;
+            border-radius: 8px;
+            border-left: 4px solid #667eea;
+        }
+        
+        .grupo-institucion h3 {
+            color: #667eea;
+            margin-bottom: 15px;
+            font-size: 16px;
+        }
+        
+        .grupo-fecha {
+            margin-bottom: 15px;
+            padding: 10px;
+            background: white;
+            border-radius: 5px;
+        }
+        
+        .grupo-fecha h4 {
+            color: #333;
+            margin-bottom: 10px;
+            font-size: 14px;
+        }
+        
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 10px;
+            font-size: 13px;
+        }
+        
+        table th {
+            background: #f0f0f0;
+            padding: 10px;
+            text-align: left;
+            font-weight: 600;
+            color: #333;
+            border-bottom: 2px solid #e0e0e0;
+        }
+        
+        table td {
+            padding: 10px;
+            border-bottom: 1px solid #e0e0e0;
+        }
+        
+        table tr:hover {
+            background: #f9f9f9;
+        }
+        
+        .loading {
+            text-align: center;
+            padding: 40px;
+            color: #667eea;
+        }
+        
+        .spinner {
+            border: 3px solid #f0f0f0;
+            border-top: 3px solid #667eea;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 20px;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        .acompañante-row {
+            background: #fafafa;
+            font-size: 12px;
+        }
+        
+        .no-data {
+            text-align: center;
+            padding: 40px;
+            color: #999;
+        }
+        
+        @media print {
+            .header-actions, .filters, button {
+                display: none;
+            }
+            
+            body {
+                background: white;
+            }
+            
+            .container {
+                max-width: 100%;
+            }
+            
+            .reporte-detallado {
+                box-shadow: none;
+                border: 1px solid #ddd;
+                page-break-inside: avoid;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- LOGIN -->
+    <div class="login-screen" id="loginScreen">
+        <div class="login-box">
+            <h1>🔐 Panel de Reportes</h1>
+            <p>Ingresa tu contraseña para acceder</p>
+            <input type="password" id="passwordInput" placeholder="Contraseña" onkeypress="if(event.key==='Enter') verificarContraseña()">
+            <button onclick="verificarContraseña()">Acceder</button>
+            <p style="margin-top: 20px; font-size: 12px; color: #999;">Contraseña: admin123</p>
+        </div>
+    </div>
+    
+    <!-- PANEL PRINCIPAL -->
+    <div class="container" id="panelPrincipal" style="display: none;">
+        <div class="header">
+            <h1>📊 Reportes Graduación 2025</h1>
+            <div class="header-actions">
+                <button class="btn-primary" onclick="actualizar()">🔄 Actualizar</button>
+                <button class="btn-secondary" onclick="imprimirReporte()">🖨️ Imprimir</button>
+                <button class="btn-secondary" onclick="cerrarSesion()">Cerrar Sesión</button>
+            </div>
+        </div>
+        
+        <!-- FILTROS -->
+        <div class="filters">
+            <div class="filter-group">
+                <label>Filtrar por Local:</label>
+                <select id="filtroLocal" onchange="actualizar()">
+                    <option value="">-- Todos los locales --</option>
+                    <option value="SUBAU">SUBAU</option>
+                    <option value="LA FINCA DEL ABUELO">LA FINCA DEL ABUELO</option>
+                </select>
+            </div>
+            <div class="filter-group">
+                <label>Filtrar por Institución:</label>
+                <select id="filtroInstitucion" onchange="actualizar()">
+                    <option value="">-- Todas las instituciones --</option>
+                </select>
+            </div>
+        </div>
+        
+        <!-- TARJETAS DE RESUMEN -->
+        <div class="reports">
+            <div class="report-card">
+                <h3>Total Estudiantes</h3>
+                <div class="value" id="totalEstudiantes">0</div>
+                <div class="subtitle">Registrados en total</div>
+            </div>
+            <div class="report-card">
+                <h3>Total Asistentes</h3>
+                <div class="value" id="totalAsistentes">0</div>
+                <div class="subtitle">Estudiantes + Acompañantes</div>
+            </div>
+            <div class="report-card">
+                <h3>Fechas Registradas</h3>
+                <div class="value" id="totalFechas">0</div>
+                <div class="subtitle">Diferentes fechas</div>
+            </div>
+            <div class="report-card">
+                <h3>Instituciones</h3>
+                <div class="value" id="totalInstituciones">0</div>
+                <div class="subtitle">Colegios registrados</div>
+            </div>
+        </div>
+        
+        <!-- REPORTE DETALLADO -->
+        <div class="reporte-detallado">
+            <h2>📋 Reporte Detallado por Local, Fecha e Institución</h2>
+            <div id="reporteContenido" class="loading">
+                <div class="spinner"></div>
+                <p>Cargando datos...</p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const SHEET_ID = "1lRQ9U0GrLkdRZOMS5Jefm5TbI1TxKrOax8ZrMekC5Us";
+        const PASSWORD = "admin123";
+        
+        let datosRegistros = [];
+        
+        function verificarContraseña() {
+            const password = document.getElementById('passwordInput').value;
+            if (password === PASSWORD) {
+                document.getElementById('loginScreen').classList.add('hidden');
+                document.getElementById('panelPrincipal').style.display = 'block';
+                cargarDatos();
+            } else {
+                alert('Contraseña incorrecta');
+                document.getElementById('passwordInput').value = '';
+            }
+        }
+        
+        async function cargarDatos() {
+            try {
+                document.getElementById('reporteContenido').innerHTML = '<div class="loading"><div class="spinner"></div><p>Cargando datos...</p></div>';
+                
+                const urlRegistros = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/query?tqx=out:json&sheet=REGISTROS`;
+                const responseRegistros = await fetch(urlRegistros);
+                const textRegistros = await responseRegistros.text();
+                const jsonRegistros = JSON.parse(textRegistros.substr(47).slice(0,-2));
+                
+                datosRegistros = jsonRegistros.table.rows.map(row => ({
+                    institucion: row.c[0]?.v || '',
+                    grado: row.c[1]?.v || '',
+                    seccion: row.c[2]?.v || '',
+                    fecha: row.c[3]?.v || '',
+                    local: row.c[4]?.v || '',
+                    apellidoEstudiante: row.c[5]?.v || '',
+                    nombreEstudiante: row.c[6]?.v || '',
+                    numMesa: row.c[7]?.v || '',
+                    tipo: row.c[8]?.v || '',
+                    nombreAcompañante: row.c[9]?.v || '',
+                    apellidoAcompañante: row.c[10]?.v || ''
+                }));
+                
+                llenarFiltros();
+                generarReportes();
+            } catch (error) {
+                console.error('Error cargando datos:', error);
+                document.getElementById('reporteContenido').innerHTML = '<div class="no-data">Error al cargar datos. Verifica tu conexión.</div>';
+            }
+        }
+        
+        function llenarFiltros() {
+            const instituciones = [...new Set(datosRegistros.map(r => r.institucion).filter(i => i))];
+            const selectInst = document.getElementById('filtroInstitucion');
+            
+            instituciones.sort().forEach(inst => {
+                const option = document.createElement('option');
+                option.value = inst;
+                option.textContent = inst;
+                selectInst.appendChild(option);
+            });
+        }
+        
+        function actualizar() {
+            generarReportes();
+        }
+        
+        function generarReportes() {
+            const filtroLocal = document.getElementById('filtroLocal').value;
+            const filtroInstitucion = document.getElementById('filtroInstitucion').value;
+            
+            let datosFiltrados = datosRegistros.filter(r => {
+                if (filtroLocal && r.local !== filtroLocal) return false;
+                if (filtroInstitucion && r.institucion !== filtroInstitucion) return false;
+                return true;
+            });
+            
+            const estudiantes = datosFiltrados.filter(r => r.tipo === 'Estudiante');
+            const acompañantes = datosFiltrados.filter(r => r.tipo === 'Acompañante');
+            const fechasUnicas = [...new Set(datosFiltrados.map(r => r.fecha).filter(f => f))];
+            const institucionesUnicas = [...new Set(datosFiltrados.map(r => r.institucion).filter(i => i))];
+            
+            document.getElementById('totalEstudiantes').textContent = estudiantes.length;
+            document.getElementById('totalAsistentes').textContent = estudiantes.length + acompañantes.length;
+            document.getElementById('totalFechas').textContent = fechasUnicas.length;
+            document.getElementById('totalInstituciones').textContent = institucionesUnicas.length;
+            
+            generarReporteDetallado(datosFiltrados);
+        }
+        
+        function generarReporteDetallado(datos) {
+            if (datos.length === 0) {
+                document.getElementById('reporteContenido').innerHTML = '<div class="no-data">No hay datos para mostrar</div>';
+                return;
+            }
+            
+            const porLocal = {};
+            datos.forEach(reg => {
+                if (!porLocal[reg.local]) porLocal[reg.local] = {};
+                if (!porLocal[reg.local][reg.fecha]) porLocal[reg.local][reg.fecha] = {};
+                if (!porLocal[reg.local][reg.fecha][reg.institucion]) {
+                    porLocal[reg.local][reg.fecha][reg.institucion] = [];
+                }
+                porLocal[reg.local][reg.fecha][reg.institucion].push(reg);
+            });
+            
+            let html = '';
+            
+            Object.keys(porLocal).sort().forEach(local => {
+                html += `<div class="grupo-institucion">
+                    <h3>🏢 LOCAL: ${local}</h3>`;
+                
+                Object.keys(porLocal[local]).sort().forEach(fecha => {
+                    html += `<div class="grupo-fecha">
+                        <h4>📅 Fecha: ${fecha}</h4>
+                        
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Institución</th>
+                                    <th>Grado</th>
+                                    <th>Sección</th>
+                                    <th>Estudiante</th>
+                                    <th>Mesa</th>
+                                    <th>Acompañantes</th>
+                                </tr>
+                            </thead>
+                            <tbody>`;
+                    
+                    Object.keys(porLocal[local][fecha]).sort().forEach(inst => {
+                        const registros = porLocal[local][fecha][inst];
+                        const estudiantes = registros.filter(r => r.tipo === 'Estudiante');
+                        
+                        estudiantes.forEach((est, idx) => {
+                            const acomps = registros.filter(a => a.tipo === 'Acompañante' && 
+                                                           a.apellidoEstudiante === est.apellidoEstudiante && 
+                                                           a.nombreEstudiante === est.nombreEstudiante);
+                            
+                            html += `<tr>
+                                <td>${est.institucion}</td>
+                                <td>${est.grado}</td>
+                                <td>${est.seccion}</td>
+                                <td><strong>${est.apellidoEstudiante}, ${est.nombreEstudiante}</strong></td>
+                                <td>${est.numMesa}</td>
+                                <td>${acomps.length}</td>
+                            </tr>`;
+                            
+                            acomps.forEach(acomp => {
+                                html += `<tr class="acompañante-row">
+                                    <td colspan="5"><em>→ ${acomp.apellidoAcompañante}, ${acomp.nombreAcompañante}</em></td>
+                                    <td></td>
+                                </tr>`;
+                            });
+                        });
+                    });
+                    
+                    html += `</tbody>
+                        </table>
+                    </div>`;
+                });
+                
+                html += `</div>`;
+            });
+            
+            document.getElementById('reporteContenido').innerHTML = html;
+        }
+        
+        function imprimirReporte() {
+            window.print();
+        }
+        
+        function cerrarSesion() {
+            document.getElementById('loginScreen').classList.remove('hidden');
+            document.getElementById('panelPrincipal').style.display = 'none';
+            document.getElementById('passwordInput').value = '';
+        }
+        
+        window.addEventListener('load', () => {
+            document.getElementById('loginScreen').classList.remove('hidden');
+        });
+    </script>
+</body>
+</html>

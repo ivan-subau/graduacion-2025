@@ -187,7 +187,7 @@
         .summary-row {
             display: flex;
             justify-content: space-between;
-            padding: 5px 0;
+            padding: 8px 0;
             border-bottom: 1px solid #e0e0e0;
         }
         
@@ -212,17 +212,24 @@
             padding-right: 10px;
         }
         
-        .estudiante-item {
-            margin: 15px 0;
-            padding: 10px;
-            border-left: 3px solid #667eea;
-            background: #f9f9f9;
-            border-radius: 5px;
+        .error-message {
+            background: #f8d7da;
+            border: 1px solid #f5c6cb;
+            color: #721c24;
+            padding: 12px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            font-size: 13px;
         }
         
-        .acompañantes {
-            margin-top: 10px;
-            font-size: 12px;
+        .success-message {
+            background: #d4edda;
+            border: 1px solid #c3e6cb;
+            color: #155724;
+            padding: 12px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            font-size: 13px;
         }
     </style>
 </head>
@@ -234,7 +241,7 @@
         </div>
         
         <div class="content">
-            <!-- PASO 1 -->
+            <!-- PASO 1: Información Inicial -->
             <div class="step active" id="step1">
                 <div class="step-counter">Paso 1 de 4</div>
                 <h2 style="font-size: 18px; margin-bottom: 20px;">Información Inicial</h2>
@@ -270,13 +277,13 @@
                 </div>
             </div>
             
-            <!-- PASO 2 -->
+            <!-- PASO 2: Opción Impresión/Online -->
             <div class="step" id="step2">
                 <div class="step-counter">Paso 2 de 4</div>
                 <h2 style="font-size: 18px; margin-bottom: 20px;">¿Cómo deseas registrar?</h2>
                 
                 <div style="margin-bottom: 20px;">
-                    <button class="btn-primary" style="width: 100%; margin-bottom: 10px; text-align: center; padding: 20px;" onclick="generarPDF()">
+                    <button class="btn-primary" style="width: 100%; margin-bottom: 10px; text-align: center; padding: 20px;" onclick="descargarPlantilla()">
                         📄 Descargar Plantilla para Imprimir
                     </button>
                     <p style="text-align: center; font-size: 12px; color: #999; margin: 10px 0;">Imprime y llena a mano</p>
@@ -294,7 +301,7 @@
                 </div>
             </div>
             
-            <!-- PASO 3 -->
+            <!-- PASO 3: Fecha y Local -->
             <div class="step" id="step3">
                 <div class="step-counter">Paso 3 de 4</div>
                 <h2 style="font-size: 18px; margin-bottom: 20px;">Fecha y Local</h2>
@@ -317,11 +324,12 @@
                 </div>
             </div>
             
-            <!-- PASO 4 -->
+            <!-- PASO 4: Registro de Estudiantes -->
             <div class="step" id="step4">
                 <div class="step-counter">Paso 4 de 4</div>
                 <h2 style="font-size: 18px; margin-bottom: 20px;">Registrar Estudiantes</h2>
                 
+                <div id="mensajeError"></div>
                 <div class="students-container" id="estudiantesForm"></div>
                 
                 <div class="button-group">
@@ -330,7 +338,7 @@
                 </div>
             </div>
             
-            <!-- CONFIRMACION -->
+            <!-- CONFIRMACIÓN -->
             <div class="step" id="step5">
                 <div style="text-align: center; padding: 40px 20px;">
                     <div style="font-size: 60px; margin-bottom: 20px;">✅</div>
@@ -349,8 +357,17 @@
     </div>
 
     <script>
+        // ===== CONFIGURACIÓN PRINCIPAL =====
         const APPS_SCRIPT_URL = "https://script.googleapis.com/macros/s/AKfycbyapz75V-AlJ422MOVRjdHaZAgJshQlTwB1XlowZPiz5Yq8BrDloAISfTdgh_PLE4KX/exec";
         const SHEET_ID = "1lRQ9U0GrLkdRZOMS5Jefm5TbI1TxKrOax8ZrMekC5Us";
+        
+        // ===== ACTUALIZA ESTO CON TUS DATOS REALES =====
+        const datosEstaticos = {
+            instituciones: ['Colegio A', 'Colegio B', 'Colegio C', 'Colegio D', 'Colegio E', 'Colegio F', 'Colegio G', 'Colegio H', 'Colegio I', 'Colegio J', 'Colegio K', 'Colegio L', 'Colegio M', 'Colegio N', 'Colegio O', 'Colegio P', 'Colegio Q', 'Colegio R', 'Colegio S', 'Colegio T'],
+            grados: ['1ro', '2do', '3ro', '4to', '5to', '6to'],
+            secciones: ['A', 'B', 'C', 'D'],
+            locales: ['SUBAU', 'LA FINCA DEL ABUELO']
+        };
         
         let datosGlobales = {
             institucion: '',
@@ -362,14 +379,9 @@
             estudiantes: []
         };
         
-        const datosEstaticos = {
-            instituciones: ['Colegio A', 'Colegio B', 'Colegio C', 'Colegio D', 'Colegio E'],
-            grados: ['1ro', '2do', '3ro', '4to', '5to', '6to'],
-            secciones: ['A', 'B', 'C', 'D'],
-            locales: ['SUBAU', 'LA FINCA DEL ABUELO']
-        };
-        
+        // ===== CARGAR CONFIGURACIÓN =====
         function cargarConfiguracion() {
+            // Instituciones
             const selectInst = document.getElementById('institucion');
             datosEstaticos.instituciones.forEach(inst => {
                 const option = document.createElement('option');
@@ -378,6 +390,7 @@
                 selectInst.appendChild(option);
             });
             
+            // Grados
             const selectGrado = document.getElementById('grado');
             datosEstaticos.grados.forEach(grado => {
                 const option = document.createElement('option');
@@ -386,6 +399,7 @@
                 selectGrado.appendChild(option);
             });
             
+            // Secciones
             const selectSecc = document.getElementById('seccion');
             datosEstaticos.secciones.forEach(secc => {
                 const option = document.createElement('option');
@@ -394,6 +408,7 @@
                 selectSecc.appendChild(option);
             });
             
+            // Locales
             const selectLocal = document.getElementById('local');
             datosEstaticos.locales.forEach(local => {
                 const option = document.createElement('option');
@@ -402,9 +417,10 @@
                 selectLocal.appendChild(option);
             });
             
-            console.log('Configuración cargada');
+            console.log('✅ Configuración cargada correctamente');
         }
         
+        // ===== NAVEGACIÓN ENTRE PASOS =====
         function irPaso1() {
             document.querySelectorAll('.step').forEach(s => s.classList.remove('active'));
             document.getElementById('step1').classList.add('active');
@@ -452,6 +468,7 @@
             document.getElementById('step4').classList.add('active');
         }
         
+        // ===== GENERAR FORMULARIO DE ESTUDIANTES =====
         function generarFormularioEstudiantes() {
             const container = document.getElementById('estudiantesForm');
             container.innerHTML = '';
@@ -487,6 +504,7 @@
             }
         }
         
+        // ===== ACOMPAÑANTES =====
         function agregarAcompañante(indexEstudiante) {
             const container = document.querySelector(`.companions-list[data-student="${indexEstudiante}"]`);
             const indexAcomp = container.children.length;
@@ -499,9 +517,11 @@
             const item = document.createElement('div');
             item.className = 'companion-item';
             item.innerHTML = `
-                <input type="text" placeholder="Nombre" class="acomp-nombre" data-student="${indexEstudiante}" data-index="${indexAcomp}" style="width: 48%; padding: 8px; margin-right: 5px;">
-                <input type="text" placeholder="Apellido" class="acomp-apellido" data-student="${indexEstudiante}" data-index="${indexAcomp}" style="width: 48%; padding: 8px;">
-                <button onclick="eliminarAcompañante(${indexEstudiante}, ${indexAcomp})" style="width: 100%; padding: 5px; margin-top: 5px; background: #ff6b6b; color: white; border: none; border-radius: 3px; cursor: pointer; font-size: 11px;">Eliminar</button>
+                <div style="display: flex; gap: 5px; margin-bottom: 5px;">
+                    <input type="text" placeholder="Nombre" class="acomp-nombre" data-student="${indexEstudiante}" data-index="${indexAcomp}" style="flex: 1; padding: 8px; border: 2px solid #e0e0e0; border-radius: 5px;">
+                    <input type="text" placeholder="Apellido" class="acomp-apellido" data-student="${indexEstudiante}" data-index="${indexAcomp}" style="flex: 1; padding: 8px; border: 2px solid #e0e0e0; border-radius: 5px;">
+                </div>
+                <button onclick="eliminarAcompañante(${indexEstudiante}, ${indexAcomp})" style="width: 100%; padding: 5px; background: #ff6b6b; color: white; border: none; border-radius: 3px; cursor: pointer; font-size: 11px;">Eliminar</button>
             `;
             container.appendChild(item);
         }
@@ -513,10 +533,15 @@
             }
         }
         
+        // ===== ENVIAR DATOS A GOOGLE SHEETS =====
         async function enviarDatos() {
+            const mensajeError = document.getElementById('mensajeError');
+            mensajeError.innerHTML = '';
+            
             const estudiantes = [];
             const cards = document.querySelectorAll('.student-card');
             
+            // Validar y recopilar datos
             cards.forEach((card, i) => {
                 const apellido = card.querySelector('.apellido-est').value.trim();
                 const nombre = card.querySelector('.nombre-est').value.trim();
@@ -545,20 +570,23 @@
                 });
             });
             
-            for (const est of estudiantes) {
-                const payload = {
-                    institucion: datosGlobales.institucion,
-                    grado: datosGlobales.grado,
-                    seccion: datosGlobales.seccion,
-                    fecha: datosGlobales.fecha,
-                    local: datosGlobales.local,
-                    apellidoEstudiante: est.apellido,
-                    nombreEstudiante: est.nombre,
-                    numMesa: est.mesa,
-                    acompañantes: est.acompañantes
-                };
-                
-                try {
+            if (estudiantes.length === 0) return;
+            
+            // Enviar cada estudiante
+            try {
+                for (const est of estudiantes) {
+                    const payload = {
+                        institucion: datosGlobales.institucion,
+                        grado: datosGlobales.grado,
+                        seccion: datosGlobales.seccion,
+                        fecha: datosGlobales.fecha,
+                        local: datosGlobales.local,
+                        apellidoEstudiante: est.apellido,
+                        nombreEstudiante: est.nombre,
+                        numMesa: est.mesa,
+                        acompañantes: est.acompañantes
+                    };
+                    
                     const response = await fetch(APPS_SCRIPT_URL, {
                         method: 'POST',
                         body: JSON.stringify(payload)
@@ -568,17 +596,18 @@
                     if (!result.success) {
                         throw new Error(result.message);
                     }
-                } catch (error) {
-                    console.error('Error:', error);
-                    alert('Error al guardar datos: ' + error.message);
-                    return;
                 }
+                
+                datosGlobales.estudiantes = estudiantes;
+                mostrarConfirmacion();
+                
+            } catch (error) {
+                console.error('Error:', error);
+                mensajeError.innerHTML = `<div class="error-message">❌ Error al guardar: ${error.message}</div>`;
             }
-            
-            datosGlobales.estudiantes = estudiantes;
-            mostrarConfirmacion();
         }
         
+        // ===== MOSTRAR CONFIRMACIÓN =====
         function mostrarConfirmacion() {
             const resumen = document.getElementById('resumenFinal');
             let html = `
@@ -599,7 +628,7 @@
                     <span class="summary-value">${datosGlobales.local}</span>
                 </div>
                 <div class="summary-row">
-                    <span class="summary-label">Estudiantes:</span>
+                    <span class="summary-label">Estudiantes Registrados:</span>
                     <span class="summary-value">${datosGlobales.estudiantes.length}</span>
                 </div>
             `;
@@ -609,9 +638,9 @@
             document.getElementById('step5').classList.add('active');
         }
         
-        function generarPDF() {
-            const contenido = `
-GRADUACION 2025
+        // ===== DESCARGAR PLANTILLA =====
+        function descargarPlantilla() {
+            const contenido = `GRADUACIÓN 2025 - PLANTILLA DE REGISTRO
 ════════════════════════════════════════════════════════════════
 
 INSTITUCIÓN: ${datosGlobales.institucion}
@@ -621,34 +650,40 @@ CANTIDAD DE ESTUDIANTES: ${datosGlobales.cantEstudiantes}
 
 ════════════════════════════════════════════════════════════════
 
-REGISTRO DE ESTUDIANTES Y ACOMPAÑANTES
+INSTRUCCIONES:
+1. Llena los datos a mano
+2. Digitaliza después o ingresa manualmente en el formulario online
+
+════════════════════════════════════════════════════════════════
 
 ${Array.from({length: datosGlobales.cantEstudiantes}, (_, i) => `
 ESTUDIANTE ${i + 1}
 ─────────────────────────────────────────────────────────────
-Apellidos: _______________________________________
-Nombres: _________________________________________
+Apellidos: _____________________________________________
+Nombres: _______________________________________________
 Número de Mesa: ___________
 
 ACOMPAÑANTES (Máximo 15):
-1. Apellido: ________________________  Nombre: ___________________
-2. Apellido: ________________________  Nombre: ___________________
-3. Apellido: ________________________  Nombre: ___________________
-4. Apellido: ________________________  Nombre: ___________________
-5. Apellido: ________________________  Nombre: ___________________
-6. Apellido: ________________________  Nombre: ___________________
-7. Apellido: ________________________  Nombre: ___________________
-8. Apellido: ________________________  Nombre: ___________________
-9. Apellido: ________________________  Nombre: ___________________
-10. Apellido: ________________________  Nombre: ___________________
-11. Apellido: ________________________  Nombre: ___________________
-12. Apellido: ________________________  Nombre: ___________________
-13. Apellido: ________________________  Nombre: ___________________
-14. Apellido: ________________________  Nombre: ___________________
-15. Apellido: ________________________  Nombre: ___________________
+1. Apellido: ________________________  Nombre: _____________________
+2. Apellido: ________________________  Nombre: _____________________
+3. Apellido: ________________________  Nombre: _____________________
+4. Apellido: ________________________  Nombre: _____________________
+5. Apellido: ________________________  Nombre: _____________________
+6. Apellido: ________________________  Nombre: _____________________
+7. Apellido: ________________________  Nombre: _____________________
+8. Apellido: ________________________  Nombre: _____________________
+9. Apellido: ________________________  Nombre: _____________________
+10. Apellido: ________________________  Nombre: _____________________
+11. Apellido: ________________________  Nombre: _____________________
+12. Apellido: ________________________  Nombre: _____________________
+13. Apellido: ________________________  Nombre: _____________________
+14. Apellido: ________________________  Nombre: _____________________
+15. Apellido: ________________________  Nombre: _____________________
 
 `).join('\n════════════════════════════════════════════════════════════════\n')}
-`;
+
+FIN DE LA PLANTILLA
+════════════════════════════════════════════════════════════════`;
             
             const blob = new Blob([contenido], {type: 'text/plain;charset=utf-8'});
             const link = document.createElement('a');
@@ -657,33 +692,37 @@ ACOMPAÑANTES (Máximo 15):
             link.click();
         }
         
+        // ===== IMPRIMIR RESUMEN =====
         function imprimirResumen() {
-            const ventana = window.open('', '', 'width=800,height=600');
+            const ventana = window.open('', '', 'width=900,height=700');
             ventana.document.write(`
+                <!DOCTYPE html>
                 <html>
                 <head>
-                    <title>Resumen Registro - Graduación 2025</title>
+                    <title>Resumen - Graduación 2025</title>
                     <style>
                         body { font-family: Arial, sans-serif; padding: 20px; }
-                        .header { text-align: center; margin-bottom: 30px; }
-                        .header h1 { margin: 0; color: #333; }
+                        .header { text-align: center; margin-bottom: 30px; border-bottom: 3px solid #667eea; padding-bottom: 20px; }
+                        .header h1 { margin: 0; color: #333; font-size: 24px; }
                         .header p { margin: 5px 0; color: #666; }
                         .data { margin: 20px 0; padding: 15px; background: #f5f5f5; border-radius: 5px; }
-                        .data-row { display: flex; justify-content: space-between; margin: 8px 0; }
-                        .data-label { font-weight: bold; }
-                        .data-value { color: #667eea; }
-                        .estudiantes { margin-top: 20px; }
-                        .estudiante-item { margin: 15px 0; padding: 10px; border-left: 3px solid #667eea; background: #f9f9f9; }
-                        .acompañantes { margin-top: 10px; font-size: 12px; }
+                        .data-row { display: flex; justify-content: space-between; margin: 10px 0; padding: 5px 0; border-bottom: 1px solid #ddd; }
+                        .data-label { font-weight: bold; color: #333; }
+                        .data-value { color: #667eea; font-weight: bold; }
+                        .estudiantes { margin-top: 30px; }
+                        .estudiante-item { margin: 15px 0; padding: 12px; border-left: 4px solid #667eea; background: #f9f9f9; page-break-inside: avoid; }
+                        .acompañantes { margin-top: 10px; font-size: 13px; padding-left: 15px; }
+                        .acomp-item { margin: 5px 0; }
+                        h3 { color: #667eea; margin-top: 20px; }
                         @media print {
-                            body { margin: 0; padding: 0; }
+                            body { margin: 0; padding: 10px; }
                         }
                     </style>
                 </head>
                 <body>
                     <div class="header">
                         <h1>🎓 Graduación 2025</h1>
-                        <p>Resumen de Registro</p>
+                        <p>Resumen de Registro Completado</p>
                     </div>
                     
                     <div class="data">
@@ -707,22 +746,31 @@ ACOMPAÑANTES (Máximo 15):
                             <span class="data-label">Local:</span>
                             <span class="data-value">${datosGlobales.local}</span>
                         </div>
+                        <div class="data-row">
+                            <span class="data-label">Total de Estudiantes:</span>
+                            <span class="data-value">${datosGlobales.estudiantes.length}</span>
+                        </div>
                     </div>
                     
+                    <h3>📋 Detalle de Registros</h3>
                     <div class="estudiantes">
-                        <h3>Estudiantes Registrados (${datosGlobales.estudiantes.length})</h3>
                         ${datosGlobales.estudiantes.map((est, idx) => `
                             <div class="estudiante-item">
                                 <strong>${idx + 1}. ${est.apellido}, ${est.nombre}</strong>
-                                <div>Mesa: ${est.mesa || 'No asignada'}</div>
+                                <div style="margin-top: 5px; color: #666;">Mesa: ${est.mesa || 'No asignada'}</div>
                                 ${est.acompañantes.length > 0 ? `
                                     <div class="acompañantes">
                                         <strong>Acompañantes (${est.acompañantes.length}):</strong>
-                                        ${est.acompañantes.map(a => `<div>• ${a.apellido}, ${a.nombre}</div>`).join('')}
+                                        ${est.acompañantes.map(a => `<div class="acomp-item">• ${a.apellido}, ${a.nombre}</div>`).join('')}
                                     </div>
-                                ` : ''}
+                                ` : '<div class="acompañantes"><em>Sin acompañantes</em></div>'}
                             </div>
                         `).join('')}
+                    </div>
+                    
+                    <div style="margin-top: 40px; text-align: center; color: #999; font-size: 12px;">
+                        <p>Documento generado automáticamente - Graduación 2025</p>
+                        <p>Fecha de impresión: ${new Date().toLocaleDateString('es-ES')}</p>
                     </div>
                     
                     <script>
@@ -734,6 +782,7 @@ ACOMPAÑANTES (Máximo 15):
             ventana.document.close();
         }
         
+        // ===== RESETEAR FORMULARIO =====
         function resetFormulario() {
             datosGlobales = {
                 institucion: '',
@@ -751,10 +800,12 @@ ACOMPAÑANTES (Máximo 15):
             document.getElementById('cantEstudiantes').value = '';
             document.getElementById('fecha').value = '';
             document.getElementById('local').value = '';
+            document.getElementById('mensajeError').innerHTML = '';
             
             irPaso1();
         }
         
+        // ===== INICIALIZAR AL CARGAR =====
         window.addEventListener('load', cargarConfiguracion);
     </script>
 </body>
